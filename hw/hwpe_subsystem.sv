@@ -105,7 +105,7 @@ module hwpe_subsystem #(
       .rst_ni ( rst_ni ),
       .clear_i ( 1'b0 ),
       .in ( hci_hwpe[i] ),
-      .out ( hci_mem_routed[i*ActMemNumBanks:(i+1)*ActMemNumBanks-1] )
+      .out ( hci_mem_routed[i*ActMemNumBanks+:ActMemNumBanks] )
     );
   end
 
@@ -173,9 +173,9 @@ module hwpe_subsystem #(
 
   generate
     for(genvar i = 0; i < WidePortFact; i++) begin: gen_multiport_bindings
-      assign hci_hwpe[0].data[(i+1)*DataWidth-1:i*DataWidth] = tcdm_data[i];
-      assign hci_hwpe[0].be[i*4+3:i*4] = tcdm_be[i];
-      assign tcdm_r_data[i] = hci_hwpe[0].r_data[(i+1)*DataWidth-1:i*DataWidth];
+      assign hci_hwpe[0].data[i*DataWidth+:DataWidth] = tcdm_data[i];
+      assign hci_hwpe[0].be[i*4+:4] = tcdm_be[i];
+      assign tcdm_r_data[i] = hci_hwpe[0].r_data[i*DataWidth+:DataWidth];
       assign tcdm_gnt[i] = hci_hwpe[0].gnt;
       assign tcdm_r_valid[i] = hci_hwpe[0].r_valid;
     end
