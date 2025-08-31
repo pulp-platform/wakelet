@@ -666,8 +666,8 @@ module wl_top
   );
 
   hwpe_subsystem #(
-    .DataWidth ( DataWidth ),
-    .AddrWidth ( AddrWidth ),
+    .ExtDataWidth ( DataWidth ),
+    .ExtAddrWidth ( AddrWidth ),
     .WidePortFact ( HwpeDataWidthFact ),
     .PeriphIdWidth ( PeriphIdWidth ),
     .ActMemNumBanks ( ActMemNumBanks ),

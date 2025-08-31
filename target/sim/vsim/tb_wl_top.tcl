@@ -332,8 +332,8 @@ if {$GUI == 1} {
     add wave -noupdate -group i_csrs /tb_wl_top/dut/i_csrs/next_state
     add wave -noupdate -group i_csrs /tb_wl_top/dut/i_csrs/req_buf_d
     add wave -noupdate -group i_csrs /tb_wl_top/dut/i_csrs/req_buf_q
-    add wave -noupdate -group i_hwpe_subsystem -group params /tb_wl_top/dut/i_hwpe_subsystem/DataWidth
-    add wave -noupdate -group i_hwpe_subsystem -group params /tb_wl_top/dut/i_hwpe_subsystem/AddrWidth
+    add wave -noupdate -group i_hwpe_subsystem -group params /tb_wl_top/dut/i_hwpe_subsystem/ExtDataWidth
+    add wave -noupdate -group i_hwpe_subsystem -group params /tb_wl_top/dut/i_hwpe_subsystem/ExtAddrWidth
     add wave -noupdate -group i_hwpe_subsystem -group params /tb_wl_top/dut/i_hwpe_subsystem/WidePortFact
     add wave -noupdate -group i_hwpe_subsystem -group params /tb_wl_top/dut/i_hwpe_subsystem/PeriphIdWidth
     add wave -noupdate -group i_hwpe_subsystem -group params /tb_wl_top/dut/i_hwpe_subsystem/ActMemNumBanks
