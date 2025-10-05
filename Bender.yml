@@ -33,9 +33,12 @@ sources:
   - hw/core_subsystem.sv
   - hw/wl_registers.sv
   - hw/adapter_axi2hci.sv
+  - hw/hwpe_param_mem.sv
   # Level 1
-  - hw/hwpe_subsystem.sv
+  - hw/hwpe_param_mem_sys.sv
   # Level 2
+  - hw/hwpe_subsystem.sv
+  # Level 3
   - hw/wl_top.sv
 
   - target: wl_test

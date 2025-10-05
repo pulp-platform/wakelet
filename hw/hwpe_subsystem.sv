@@ -3,10 +3,13 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Sergio Mazzola <smazzola@iis.ee.ethz.ch>
+// Arpan Suravi Prasad <prasadar@iis.ee.ethz.ch>
 
 `include "hci_helpers.svh"
 
-module hwpe_subsystem #(
+module hwpe_subsystem 
+  import wl_pkg::*;
+#(
   parameter int unsigned ExtDataWidth = 32,
   parameter int unsigned ExtAddrWidth = 32,
   parameter int unsigned ExtElemWidth = 8,
@@ -28,7 +31,7 @@ module hwpe_subsystem #(
   parameter type axi_resp_t = logic,
   // Dependent parameters: do not modify!
   localparam int unsigned ExtNumElemWord = ExtDataWidth / ExtElemWidth,
-  localparam int unsigned ExtAddrOffs    = $clog2(ExtNumElemWord),
+  localparam int unsigned ExtAddrOffs    = ExtNumElemWord == 1 ? 0 : $clog2(ExtNumElemWord),
   localparam int unsigned HwpeDataWidth = ExtDataWidth * WidePortFact,
   localparam int unsigned ActMemWordWidth = ActMemElemWidth * ActMemNumElemWord,
   parameter int unsigned ActMemAddrWidth = $clog2(ActMemNumBankWords) + ExtAddrOffs // bank 4-byte words + 2 LSBs for bytes
@@ -38,6 +41,8 @@ module hwpe_subsystem #(
   // Sensor interface (AXI slave)
   input  axi_req_t  axi_slv_req_i,
   output axi_resp_t axi_slv_rsp_o,
+  // Parameter Initialization 
+  AXI_BUS           axi_param_mem,
   // Peripheral slave port
   hwpe_ctrl_intf_periph.slave periph_slave
 );
@@ -91,6 +96,46 @@ module hwpe_subsystem #(
     EHW: hci_package::DEFAULT_EHW
   };
   `HCI_INTF_ARRAY(hci_mem, clk_i, 0:ActMemNumBanks-1);
+
+    // Weight memory target
+  localparam hci_package::hci_size_parameter_t `HCI_SIZE_PARAM(hwpe_wmem_tcdm) = '{
+    DW:  HwpeWmemDataWidth,
+    AW:  HwpeWmemBankAddrWidth,
+    BW:  HwpeWmemDataWidth,
+    UW:  hci_package::DEFAULT_UW,
+    IW:  hci_package::DEFAULT_IW,
+    EW:  hci_package::DEFAULT_EW,
+    EHW: hci_package::DEFAULT_EHW
+  };
+  `HCI_INTF(hwpe_wmem_tcdm, clk_i);
+
+  // Normquant memory target
+  localparam hci_package::hci_size_parameter_t `HCI_SIZE_PARAM(hwpe_nqmem_tcdm) = '{
+    DW:  HwpeNqmemDataWidth,
+    AW:  HwpeNqmemBankAddrWidth,
+    BW:  HwpeNqmemDataWidth,
+    UW:  hci_package::DEFAULT_UW,
+    IW:  hci_package::DEFAULT_IW,
+    EW:  hci_package::DEFAULT_EW,
+    EHW: hci_package::DEFAULT_EHW
+  };
+  `HCI_INTF(hwpe_nqmem_tcdm, clk_i);
+
+  hwpe_param_mem_sys #(
+    .`HCI_SIZE_PARAM(hwpe_wmem_tcdm)   ( `HCI_SIZE_PARAM(hwpe_wmem_tcdm)  ),
+    .`HCI_SIZE_PARAM(hwpe_nqmem_tcdm)  ( `HCI_SIZE_PARAM(hwpe_nqmem_tcdm) )
+  ) i_hwpe_param_mem_sys (
+    .clk_i           ( clk_i           ),
+    .rst_ni          ( rst_ni          ),
+    .core_wr_slv     ( axi_param_mem   ),
+    .hwpe_wmem_tcdm  ( hwpe_wmem_tcdm  ),
+    .hwpe_nqmem_tcdm ( hwpe_nqmem_tcdm )
+  );
+
+  assign hwpe_wmem_tcdm.req = 1'b0;
+  assign hwpe_wmem_tcdm.wen = 1'b0;
+  assign hwpe_nqmem_tcdm.req = 1'b0;
+  assign hwpe_nqmem_tcdm.wen = 1'b0;
 
   /* Interconnect */
 

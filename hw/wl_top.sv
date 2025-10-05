@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Sergio Mazzola <smazzola@iis.ee.ethz.ch>
+// Arpan Suravi Prasad <prasadar@iis.ee.ethz.ch>
 
 `include "axi/assign.svh"
 `include "reqrsp_interface/typedef.svh"
@@ -60,7 +61,7 @@ module wl_top
   // 0. to external AXI narrow master port
   // 1. to core instr memory
   // 2. to core data memory
-  localparam int unsigned ClusterBusNumSlaves = 3;
+  localparam int unsigned ClusterBusNumSlaves = 4;
 
   // Routing rules
   localparam int unsigned ClusterBusNumRules = ClusterBusNumSlaves + 1; // +1 for "everything above cluster"
@@ -68,7 +69,7 @@ module wl_top
   localparam cluster_bus_rule_t [ClusterBusNumRules-1:0] ClusterBusAddrMap = '{
     '{ // everything above cluster
         idx: 32'd0, // to external AXI narrow master port
-        start_addr: DataMemBaseAddr + DataMemOffset,
+        start_addr: HwpeNqmemBaseAddr + HwpeNqmemOffset,
         end_addr: 32'hFFFF_FFFF
     },
     '{ // Core data memory
@@ -80,6 +81,11 @@ module wl_top
         idx: 32'd1, // to core instr memory
         start_addr: InstrMemBaseAddr,
         end_addr: InstrMemBaseAddr + InstrMemOffset
+    },
+    '{ // Weight memory
+        idx: 32'd3, // to weight memory
+        start_addr: HwpeWmemBaseAddr,
+        end_addr: HwpeNqmemBaseAddr + HwpeNqmemOffset
     },
     '{ // everything below cluster
         idx: 32'd0, // to external AXI narrow master port
@@ -125,6 +131,9 @@ module wl_top
   `AXI_LITE_ASSIGN(bus_instr_mem_axi_lite_in, cluster_bus_axi_lite_out[1])
   // to core data memory
   `AXI_LITE_ASSIGN(bus_data_mem_axi_lite_in, cluster_bus_axi_lite_out[2])
+  // to hwpe parameter memory
+  `AXI_LITE_ASSIGN(bus_hwpe_wgt_mem_axi_lite_in, cluster_bus_axi_lite_out[3])
+
 
   axi_lite_xbar_intf #(
     .Cfg ( ClusterBusXbarCfg ),
@@ -289,6 +298,31 @@ module wl_top
   // Remap address
   axi_lite_addr_t bus_instr_mem_addr_remap;
   assign bus_instr_mem_addr_remap = bus_instr_mem_addr & (InstrMemOffset - 1);
+
+  /* HWPE weight memory master */
+
+  // Adapt AXI Lite -> AXI
+  AXI_LITE #(
+    .AXI_ADDR_WIDTH ( AxiLiteAddrWidth ),
+    .AXI_DATA_WIDTH ( AxiLiteDataWidth )
+  ) bus_hwpe_wgt_mem_axi_lite_in ();
+
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AxiLiteAddrWidth ),
+    .AXI_DATA_WIDTH ( AxiLiteDataWidth ),
+    .AXI_ID_WIDTH ( 32'd1 ),
+    .AXI_USER_WIDTH ( 32'd1 )
+  ) axi_param_mem ();
+
+  axi_lite_to_axi_intf #(
+    .AXI_DATA_WIDTH ( AxiLiteDataWidth )
+  ) i_bus_hwpe_wgt_mem_axi_lite_to_axi (
+    .in ( bus_hwpe_wgt_mem_axi_lite_in ),
+    .slv_aw_cache_i ( '0 ),
+    .slv_ar_cache_i ( '0 ),
+    .out ( axi_param_mem )
+  );
+
 
   /////////////////
   // Snitch core //
@@ -686,6 +720,7 @@ module wl_top
     .rst_ni ( rst_ni ),
     .axi_slv_req_i ( axi_slv_req_i ),
     .axi_slv_rsp_o ( axi_slv_rsp_o ),
+    .axi_param_mem ( axi_param_mem ),
     .periph_slave ( periph_hwpe_if )
   );
 

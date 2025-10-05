@@ -12,6 +12,7 @@ MEMORY {
   snitch_bootrom (rx) : ORIGIN = BOOTROM_BASE, LENGTH = 128
   instr_mem      (rx) : ORIGIN = INSTR_MEM_BASE, LENGTH = INSTR_MEM_NUMBYTES
   data_mem       (rw) : ORIGIN = DATA_MEM_BASE, LENGTH = DATA_MEM_NUMBYTES
+  hwpe_param_mem (rw) : ORIGIN = HWPE_PARAM_MEM_BASE, LENGTH = 16384
 }
 
 SECTIONS {

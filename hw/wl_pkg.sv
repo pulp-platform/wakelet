@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Sergio Mazzola <smazzola@iis.ee.ethz.ch>
+// Arpan Suravi Prasad <prasadar@iis.ee.ethz.ch>
 
 `include "axi/typedef.svh"
 `include "reqrsp_interface/typedef.svh"
@@ -37,6 +38,16 @@ package wl_pkg;
   // CSRs
   localparam int CsrNumRegs = 1;
   localparam int CsrNumBytes = CsrNumRegs * (DataWidth / 8);
+
+  // HWPE Weight memory
+  localparam int HwpeWgtMemNumWords  = 4096;
+  localparam int HwpeWgtMemNumBytes  = HwpeWgtMemNumWords * (DataWidth / 8);
+  localparam int HwpeWgtMemAddrWidth = (HwpeWgtMemNumBytes > 1) ? $clog2(HwpeWgtMemNumBytes) : 1;
+
+  // HWPE NQ memory
+  localparam int HwpeNqMemNumWords  = 512;
+  localparam int HwpeNqMemNumBytes  = HwpeNqMemNumWords * (DataWidth / 8);
+  localparam int HwpeNqMemAddrWidth = (HwpeNqMemNumBytes > 1) ? $clog2(HwpeNqMemNumBytes) : 1;
 
   // HWPE peripheral config
   localparam int HwpeCfgNumBytes = 32'h0000_1000;
@@ -86,6 +97,16 @@ package wl_pkg;
   localparam int HwpeDataWidthFact = 8;
   localparam int HwpeDataWidth = ActMemElemWidth * HwpeDataWidthFact;
 
+  localparam int unsigned HwpeWmemNumBanks = 1;
+  localparam int unsigned HwpeWmemDataWidth = 24;
+  localparam int unsigned HwpeWmemBankAddrWidth = 11;//2048 entries each 24b wide
+  localparam int unsigned HwpeWmemAddrWidth = 11;//2048 entries each 24b wide
+
+  localparam int unsigned HwpeNqmemNumBanks = 1;
+  localparam int unsigned HwpeNqmemDataWidth = 36;
+  localparam int unsigned HwpeNqmemBankAddrWidth = 7;//128 entries each 26b wide
+  localparam int unsigned HwpeNqmemAddrWidth = 7;//128 entries each 26b wide
+ 
   // AXI
   localparam int unsigned AxiAddrWidth = AddrWidth;
   localparam int unsigned AxiDataWidth = HwpeDataWidth;
@@ -119,6 +140,12 @@ package wl_pkg;
   localparam axi_lite_addr_t CsrBaseAddr = BaseAddress + 32'h0004_0000; // addressable from: core LSU (rw)
   localparam axi_lite_addr_t CsrOffset = CsrNumBytes;
 
+  localparam axi_addr_t HwpeWmemBaseAddr = BaseAddress + 32'h0005_0000; // addressable from: Host to Weight memory
+  localparam axi_addr_t HwpeWmemOffset = HwpeWgtMemNumBytes;
+
+  localparam axi_addr_t HwpeNqmemBaseAddr = BaseAddress + 32'h0006_0000; // addressable from: Host to Normquant memory
+  localparam axi_addr_t HwpeNqmemOffset   = HwpeNqMemNumBytes;
+  
   localparam axi_lite_addr_t HwpeCfgBaseAddr = BaseAddress + 32'h0008_0000; // addressable from: core LSU (rw)
   localparam axi_lite_addr_t HwpeCfgOffset = HwpeCfgNumBytes;
 
