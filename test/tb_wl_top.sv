@@ -15,9 +15,11 @@ module tb_wl_top
   //////////////////////
 
   localparam time ClkPeriod = 10ns;
+  localparam int unsigned RstCycles = 5;
   localparam time TbTA = 2ns;
   localparam time TbTT = 8ns;
 
+  // Number of bytes of Activation memory to initialize
   localparam int ActMemNumBytesInit = 2048;
 
   //
@@ -35,7 +37,7 @@ module tb_wl_top
   //    v                    axi_tb2dut_req
   //  s_eoc                  axi_tb2dut_rsp
   //                         (axi_tb_driver)
-  //                        
+  //
 
   ////////////////////////////
   // Clock/reset generation //
@@ -46,7 +48,7 @@ module tb_wl_top
 
   clk_rst_gen #(
       .ClkPeriod ( ClkPeriod ),
-      .RstClkCycles ( 5 )
+      .RstClkCycles ( RstCycles )
   ) i_clk_gen (
       .clk_o ( s_clk ),
       .rst_no( s_rst_n )
@@ -164,11 +166,10 @@ module tb_wl_top
     .out ( axi_xbar2mem )
   );
 
-  //NOTE: As defined in TbXbarAddrMap, the memory range of the Tb sim memory is fragmented.
-  //      In particular, the addressed of the sim memory between `wl_pkg::InstrMemBaseAddr`
-  //      and `wl_pkg::DataMemBaseAddr + wl_pkg::DataMemOffset` cannot be accessed. A remap
-  //      would fix this but since the sim memory is infinite, a remap is not necessary and
-  //      would complicate debugging.
+  //NOTE: As defined in TbXbarAddrMap, the memory range of the Tb sim memory is fragmented,
+  //      i.e., Wakelet's core cannot access the addresses dedicated to in instruction mem,
+  //      data mem, etc... as they are routed within Wakelet, and not outside. An internal
+  //      aliasing/remapping would solve this but we avoid it for simplicity.
 
   axi_sim_mem_intf #(
     .AXI_ADDR_WIDTH ( AxiLiteAddrWidth ),
@@ -207,7 +208,7 @@ module tb_wl_top
   localparam int unsigned TbXbarNumMasters = 2;
 
   /* Slaves */
-  // 0. to testbench memory
+  // 0. to testbench sim memory
   // 1. to AXI Lite slave port of DUT
   localparam int unsigned TbXbarNumSlaves = 2;
 

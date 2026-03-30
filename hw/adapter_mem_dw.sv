@@ -80,11 +80,10 @@ module adapter_mem_dw #(
     assign src_rdata_o = src_rdata;
 
     // Assign element-wise to properly extend/truncate element by element
-    generate for (genvar i = 0; i < SrcStrbWidth; i++) begin: gen_word_elem
+    for (genvar i = 0; i < SrcStrbWidth; i++) begin: gen_word_elem
         assign dst_wdata[i] = src_wdata[i];
         assign src_rdata[i] = dst_rdata[i];
-      end
-    endgenerate
+    end
 
   ///////////////////////////
   // Dst has more elements //
@@ -110,11 +109,10 @@ module adapter_mem_dw #(
     assign src_rdata_o = src_rdata;
 
     // Assign element-wise to properly extend/truncate element by element
-    generate for (genvar i = 0; i < SrcStrbWidth; i++) begin: gen_word_elem
+    for (genvar i = 0; i < SrcStrbWidth; i++) begin: gen_word_elem
         assign dst_wdata[i] = src_wdata[i];
         assign src_rdata[i] = dst_rdata[i];
-      end
-    endgenerate
+    end
 
   ///////////////////////////
   // Src has more elements //

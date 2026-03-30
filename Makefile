@@ -41,7 +41,7 @@ include $(WL_ROOT)/target/sim/sim.mk
 ####################
 
 ASIC_REMOTE ?= git@iis-git.ee.ethz.ch:pulp-restricted/wakelet-pd.git
-ASIC_REV    ?= c06ff30e9367b48adc3047f9402477d8d84c1e18
+ASIC_REV    ?= 1214b1b96187b1acaabfb31fa71b235de9f31ef6
 
 asic-init:
 	git clone $(ASIC_REMOTE) target/asic
